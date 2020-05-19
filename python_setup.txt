@@ -1,0 +1,526 @@
+python manage.py help
+#to get all the commands
+
+
+To enter in virtual environment 
+workon venv
+(venv) C:\Users\Vaibhav\PycharmProjects\FirstProject>cd mysite
+(venv) C:\Users\Vaibhav\PycharmProjects\FirstProject\mysite>python manage.py runserver
+Starting development server at http://127.0.0.1:8000/
+(venv) C:\Users\Vaibhav\PycharmProjects\FirstProject\mysite>python manage.py startapp calc
+//thia app is created insode the mysite application.One project may have multiple files
+ likewise we can create.
+Ex.E-commerce websites have multiple file like iteam,cart,account.
+
+setting.py file is only in main project (mysite) and not in others shows that this is one
+application with multiple module.
+
+#
+
+
+FOr first project create urls.py as a new file in calc and paste the code[not necessary to create separate file we
+can directly put url in main urls.py]
+
+#this file is created by me
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home')
+//'' indicates that ths is the homepage we can also use ('/')
+views.home=home is a method in views.py file 
+name='home' home is the filename
+]
+
+
+in views.py file of calc project
+
+from django.shortcuts import render
+
+# Create your views here.
+from django.http import HttpResponse
+
+def home(request):
+	return HttpResponse("Hello World")
+
+
+**********IMP****************************
+To reflect all this changes we need to do add url of calc project in 
+the file urls.py of Mysite project
+
+from django.contrib import admin
+from django.urls import path
+from django.urls import path,include
+
+urlpatterns = [
+path('',include('calc.urls')),
+    path('admin/', admin.site.urls),
+]
+
+////////////////////////////////////////////////////
+	Application 2
+Dispaying the dynamic content using Django
+1.Create New Folder in root directore named as 'Templates'(in the mysite project)
+Create one file demo.html in Templates folder
+
+do the changes in settings.py
+add in Templates section
+DIR=[os.path.join(BASE_DIR,'Templates')],
+
+demo.html
+<h1>Hello vaibhav....</h1>
+
+To call this demo.html
+
+views.py
+
+
+	def home(request):
+		return render(request,'demo.html')
+
+then runserver
+
+	OR
+	return render(request,'demo.html',{name:XYZ})
+
+
+demo.html
+<h1>Hello {{name}</h1>
+
+o/p is hello XYZ i.e whatevr name we will give in view.py
+(dynamic content)
+
+
+	Application 3
+
+Now we are creating another HTML file which having CSS properties and invoking this new HTML file in our OLD HTML File.
+
+		base.html
+<body bgcolor="cyan">
+{% block content %}
+
+{% endblock%}
+
+</body>
+
+Now we have to use this base.html file in demo.html
+demo.html
+
+{% extends 'base.html'%}
+
+{% block content %}
+<h1>Hello {{name}</h1>
+
+{% endblock %}
+
+	Application 4
+Addition of two numbers
+
+demo.html
+{% extends 'base.html'%}
+
+{% block content %}
+
+<h1>Hello vaibhav....</h1>
+<form action='add'>
+Enter first number:<input type="text" name="num1"><br>
+Enter second number:<input type="text" name="num2"><br>
+<input type="submit">
+</form>
+{% endblock %}
+
+
+views.py
+
+
+def home(request):
+	return render(request,'demo.html')
+
+def add(request):
+	val1=int(request.GET["num1"])
+	val2=int(request.GET["num2"])
+	res=val1+val2
+	return render(request,'result.html',{'result':res})
+		or
+	return HttpResponse(res)//if we dont want to call result.html and display data overhere.
+
+
+{% extends 'base.html'%}
+
+{% block content %}
+result.html
+Result={{result}}
+
+{% endblock %}	
+	
+url.py  calc 
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('add', views.add, name='add')
+]
+
+
+//////////////////////////////////////
+we can also specify the method that we want to use either GET or POST
+1.GET[]=it is always used to GET the data from the server.(data is visile in sddress bar)
+2.POST[]=it is always used to FETCH the data from the server.
+
+Other differences is same.
+
+<form action="add" method="post">
+
+MVT:-
+		It stands for Model,View,Template
+Model- It is nothing but the data.Data is linked with model.
+
+Template-It refers to layout of web page designed using HTML,CSS & JavaScript.It also has DTL(Django Template Language) used for introducing dynamic content in web page.
+
+View-As the data comes from model and ge displayed on Template(layout) view is used to provide mapping between Model and Template.
+ 
+
+Above diagram shows that user do request with the help of web application(Can be made using Django) this request goes in the form of URL to view after that the data is fetched from server and get displayd on Template. Actual Business Logic is written in view that is which data is sent on which page(template).
+
+		Apllication 4
+	Traveller Websites
+Create New Application in our existing project
+python manage.py startapp travello
+
+
+create urls.py file 
+url.py  travello 
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    
+    path('', views.index, name='index')
+]
+
+
+views.py travello
+
+def index(request):
+	return render(request,index.html)
+#index.html is in our Templates folder.where all other HTMl files.
+
+	index.html
+
+it is copied from internet and it has some images and dependencies.To add this dependencies create new folder 
+in Mysite project (Name of this folder is static_demo)  and paste all this dependecies and images in that folder.
+
+	/////////////***************/////////////
+include this urls.py file in main urls.py
+path('',include('travello.urls'))
+
+	settings.py 
+gives ths path of that folder where all the dependencies are situated.
+#static files (images ,css,javascript)
+STATIC_URL='/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR,'static_demo')
+]
+#django put all this file in specific folder
+STATICFILES_ROOT = [os.path.join(BASE_DIR,'assets')
+]
+#assets is a new folder name
+
+Now as django keeps all this files in assets folder so we need to tell django so open terminal of pycharm and type
+
+python manage.py collectstatic
+
+Now if the index.html file has samo path i.e href="style/bootstrap/main.css "
+we need to change it to
+
+href="{% static_demo 'style/bootstrap/main.css' %} "
+do this for all the paths.(href tags) 
+do this for style,plugin,javascript
+<scrpit src={% static_demo %}>
+
+AND INCLUDE
+{% load static_demo %} 
+this include at the top of HTML file before <!DOCTYPE html>
+
+	Application 5
+As the django generates dynamic pages but till time we have deal with static content only.The HTML in the above application the images,names,price all are static because we have did the code using HTML.
+
+
+		APPLICATION WITH DYNAMIC CONTENT 
+	In this application we will make this content dynamic by making changes in python code.
+
+create class in models.py
+
+class Destination:
+	id:int
+	name:str
+	img:str
+	descrption:str
+	price:str
+
+in views.py file
+
+from .model import Destination
+
+dest1=Destination()
+dest1.name='Mumbai'
+dest1.description='this is a dream city'
+dest1.price=1000
+return render(request,{'dest1':dest1})
+
+and in index.html file
+
+<h1>Price {{dest1.price}}
+
+THIS CODE IS ONLY FOR ONE DESTINATION IF WE WANT TO FORMAT ALL THE DESTINATION THIS WE WILL PASS THE LIST OF OBJECT.
+IF WE WANT TO ALSO PASS THE IMAGE THEN IMAGE SHOULD BE IN static_demo FOLDER.
+
+dest1=Destination()
+dest1.name='Mumbai'
+dest1.description='this is a dream city'
+dest1.price=1000
+dest1.img='a.jpg'
+
+dest2=Destination()
+dest2.name='pune'
+dest2.description='this is a biryani city'
+dest2.price=990
+dest2.img='b.jpg'
+	
+dest3=Destination()
+dest3.name='Nashik'
+dest3.description='this is a wine city'
+dest3.price=1111
+dest3.img='c.jpg'	
+dest=[dest1,dest2,dest3]
+
+return render(request,{'dest':dest1})
+
+in html file do the changes like
+for IMAGE
+<img src="{% static_demo 'a.jpg' %}">
+<img src="{% static_demo 'images/a.jpg' %}">#if our images in images folder.
+
+<h1>Price {{dest1.price}}
+<h1>Price {{dest2.price}}
+
+similar for all the attributes like name , description and for the image we cant use i.img.
+
+it is hectic task to write each time dest1.name,dest2.name and all the things(for each objects) so instead of this we can use for loop.
+
+{% for i in dest %} # dest is the list which we are passing
+
+Name:<h1>{{ i.name }}
+Price:<h1>{{ i.price }}
+
+{% endfor %}
+
+BUT for the image it will not work because we are using jinja tag inside jinja tag.
+
+<img src="{% static_demo '{{i.img}}' %}">
+
+problem is with double jinja tag so we can convert {% static_demo %} to as a variable
+Write at the top in index.html
+{% static_demo as a baseURL %}
+
+If the image in any folder
+{% static_demo "images " as a baseURL %}#images is a foder name
+ 
+
+<img src="{{baseURL}} /{{i.img}} ">#if error occured then try by removing slash(/).
+
+/////////****************//////////////////////////
+if we want to give special offer to mumbai only  and not to other city THEN:
+simply we can use if else 
+im models.py
+special_offer:bool
+
+in views.py
+dest1.special_offer=True
+dest2.special_offer=False
+dest3.special_offer=False
+
+in index.html
+{% if dest.special_offer %}
+		OR
+
+{% if dest.special_offer==true %}
+
+<h1>Special Offer</h1>
+
+{%endif%}
+
+	
+	ORM(Beautiful concept)
+	It stands for object relational mapping or mapper.
+In sql we are creating table using sql queries but ORM means we are creating table by using python (django) or 
+java (Hibernate).
+
+creating table using classses and pushing data into table by using objects.
+
+postgreSQL & pgadmin
+PostgreSQL is a database where we will connect our application to it.
+
+pgadmin is a user interface similar to PHPMyAdmin.
+
+Downloaad postgreSQL & pgadmin
+After that make changes in settings.py
+go to databases in settings.py by default hey have given sqlLite chanf=ge it to postgreSQL by adding following  line
+ databases={
+'default':{
+	'ENGINE':'db.mysql.backend.postgreSQL',
+	'NAME':'vaibhav'#database Name,
+	'USER':'our username',
+	'PASS':'OUR PASSWORD',
+	'HOST':'Localhost'
+	}
+}
+
+Django and postgreSQL araae two differenet software so there is need of connector.
+PSYCOPG is a connector name.
+
+pip install psycopg2
+
+As the django will give us directly sql table but we need to give him a model.
+We have model.py this file we need to convert to MODEL by inheriting the model class.
+	models.py
+from django.db import models
+
+class Destination(models.model):
+	#in model we are using equal to (=) while creating model and not semicolon(:)
+	name=models.CharField(max_length=100)
+	img=models.ImageField(upload_to='pics')
+#pics is a fo;der name where we upload image.
+	desc=models.TextField()
+	offer=models.BooleanField(default=False)
+	price=models.IntegerField()
+
+
+For creating table we need to migrate our model to database for that command is
+
+python manage.py makemigrations
+
+#if the error occured then check the name of our application in settin.py INSTALLED_APP section.
+INSTALLED_APPS=['travello.apps.TravelloConfig']
+
+and again give command in terminal.
+
+python manage.py makemigrations
+ 
+#for handling image we need to install pillow library.
+pip install pillow
+
+After this migration command in our tarvello project one file is generate(0001_initial.py) in migrations folder.
+This file contain our fields name ,image etc.
+
+till this point we have only did migration now we will create table using this command.
+
+python manage.py sqlmigrate travello 0001
+(0001 is a migration number which can be different.)
+
+This will give SQL query for creating table.
+
+Now do the actual migration
+python manage.py migrate
+
+1.Now go to pgadmin look for tables
+2.refresh on tables 
+3.it will show the table travello_destination .Click on it.
+id is the field which is generated by default.
+
+And we got table from class thats magic of ORM.
+
+# while creating table if we did any mistake then got o sql panel of pgadmin and alter the table.
+suppose we have  miss this paranthesis while creating table 
+
+ 	price=models.IntegerField
+
+then do the re-migrations by following command
+
+1.python manage.py makemigrations
+2.select any option that are showing on screen.
+3.python manage.py migrate
+4.it will display message of migration at last. 
+
+
+ SENDING DATA TO DATABSE
+	Two Ways
+1.Using Admin panel by the admin
+2.By the user who are using application
+
+1.USING ADMIN PANEL
+START THE SERVER AND TYPE COMMAND IN BROWSER
+127.0.0.1:8000/admin
+
+IT WILL ASK FOR USERNAME AND PASSWORD 
+IF WE HAVE NOT CREATED SUPERUSER THEN DO THE FOLLOW STEPS
+
+in terminal
+
+#this command only will execute if we did migrations.
+1.python manage.py createsuperuser
+2.fill the username,password and email.
+
+Now login by using above credential
+	Next step is to add data and for that we need a page(user interface ) to add data.
+Django giving this page auomatically just need to do the following steps:
+1.Go to admin.py file in travello project register the Module
+2.in admin.py import model
+	from .models import Destination 
+3.write register function to register
+	admin.site.register(Destination)
+Now it will give the page.
+
+
+/////////////**********///////////////
+To store the image or video in a datbase 
+1.Go to settings.py
+add the  content below this content
+STATIC_URL='/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR,'static_demo')]
+
+STATICFILES_ROOT = [os.path.join(BASE_DIR,'assets')
+]
+#code to be add for images and media file is
+
+MEDIA_URL='/media/'
+MEDIA_ROOT = [os.path.join(BASE_DIR,'media')
+
+#media is a folder name similar to static_demo which is in base directory.
+
+Now we have to add this MEDIA_URL and MEDIA_ROOT to urls.py file  and add in urlpatterns.
+urlpatterns=urlpatterns+static(settings.MEDIA_URL,document_root=MEDIA_ROOT)
+#import necessary package
+
+1.Now login as a superuser 
+2.Go to destination then add the data
+3.images can choose from any folder that on hard disk(copy in media folder if not work) but it get uploaded on "pics" folder
+because 
+#img=models.ImageField(upload_to='pics')
+
+After the complete this adding of data process go to pgadmin refresh on table and we can see all the data is there. 
+
+
+FETCHING THE DATA FROM THE DATABASE 
+	Go to views.py erase all the prious code where we have created the objects and write only one line:
+	
+def index(request):
+	dests=Destination.objects.all()
+	return render(request,index.html,{'dests':dests})
+#this will fetch all the records in the database and store it to dests.
+
+run the server we will get all the data except image
+
+in previous code our images in static_demo folder but now it is media/pics folder which is in travello project so do the change in index.html as
+
+<img src="{{baseurls}}/ {i.img}">
+
+Remove above line and write
+
+<img src="{i.img.url}">#url is a global url.
+
+#now if we add number of records in database by using pgadmin then also it will display this is the beauty.
+Example Surat.
+
